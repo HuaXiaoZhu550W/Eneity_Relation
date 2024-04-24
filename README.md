@@ -21,6 +21,15 @@
 
 本项目的模型基于BERT架构，并针对实体关系抽取任务进行了定制。模型结构定义在 `Model/BertForDuie.py` 中。特别地，采用了多窗口局部注意力特征融合的方法，这种方法通过应用多个尺寸不同的
 注意力窗口来捕捉局部上下文信息，最后通过一个可学习的权重参数对多个局部注意力机制获得的注意力权重进行加权平均，从而提高了模型对实体关系理解的准确性。
+
+## 安装依赖
+
+在运行代码之前，请确保您的Python版本并且已安装以下Python库：
+
+- torch 
+- transformers
+- python 3.8 +
+
 ## 如何运行
 
 在运行 `main.py` 之前，您需要首先运行 `create_encoding_and_decoding_file.py` 脚本来生成 `predicate2id.json` 和 `id2spo.json` 文件。这些文件包含了关系类别到ID的映射以及用于模型预测的额外信息。
@@ -31,6 +40,5 @@
 
 ## 额外说明
 
-- 确保您已安装所有必需的Python库，例如 `torch` 和 `transformers`。
 - 需要注意在运行 `python create_encoding_and_decoding_file.py`时要修改脚本中'duie_schema.json'文件的地址。
 - 您可以通过修改 `config.py` 中的参数来调整模型配置。
