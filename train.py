@@ -15,7 +15,7 @@ def train_epoch(model, trainloader, optimizer, loss_fn, lr_scheduler, device, ep
     iterations = len(trainloader)
 
     # 创建进度条
-    pbar = tqdm(desc=f"epoch: {epoch + 1}", total=iterations, postfix=dict, mininterval=0.4)
+    pbar = tqdm(desc=f"epoch{epoch + 1}", total=iterations, postfix=dict, mininterval=0.4)
     for iteration, batch in enumerate(trainloader):
         inputs, attention_mask, seq_len, token_start_index, token_end_index, labels = [X.to(device) for X in batch]
         optimizer.zero_grad()  # 梯度清零
