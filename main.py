@@ -62,7 +62,6 @@ for epoch in range(start_epoch, opt.epochs):
                              epoch, writer, opt.checkpoint_path)
 
     if (epoch + 1) % 2 == 0 or (epoch + 1) == opt.epochs:
-        print("=========================== 对模型评估 ===============================")
         precision, recall, f1 = evaluate(model, dev_loader, loss_fn, opt.device, opt.threshold, opt.data_dir,
                                          opt.id2spo, 'duie_dev.json')
         save_model(model, opt.checkpoint_path)  # 模型权重保存
