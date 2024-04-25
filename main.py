@@ -38,7 +38,7 @@ optimizer = optim.AdamW(params=model.parameters(), lr=opt.lr, weight_decay=opt.w
 # 学习率调整策略
 lr_scheduler = LrSchedulerWithWarmup(optimizer=optimizer, num_warmup_steps=opt.warmup_steps,
                                      num_total_steps=opt.epochs * len(train_loader),
-                                     warmup_ratio=5e-5, decay_ratio=1e-3)
+                                     warmup_ratio=5e-5, decay_ratio=1e-4)
 
 # 配置日志
 logging.basicConfig(filename=os.path.join(opt.logs_path, "training.log"), level=logging.INFO,
