@@ -17,7 +17,7 @@ def evaluate(model, dataloader, loss_fn, device, threshold, data_dir, id2spo, de
     total_loss = 0.0
     formatted_outputs = []
 
-    pbar = tqdm(desc="eval:", total=len(dataloader), postfix=dict, mininterval=0.4)
+    pbar = tqdm(desc="eval", total=len(dataloader), postfix=dict, mininterval=0.4)
     for iteration, batch in enumerate(dataloader):
         inputs, attention_mask, seq_len, token_start_index, token_end_index, labels = [X.to(device) for X in batch]
         with torch.no_grad():
