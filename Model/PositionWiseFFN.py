@@ -12,8 +12,8 @@ class PositionWiseFFN(nn.Module):
     def __init__(self, ffn_inputs, ffn_hiddens, ffn_outputs, **kwargs):
         super(PositionWiseFFN, self).__init__(**kwargs)
         self.dense1 = nn.Linear(in_features=ffn_inputs, out_features=ffn_hiddens)
-        self.relu = nn.GELU()
+        self.gelu = nn.GELU()
         self.dense2 = nn.Linear(in_features=ffn_hiddens, out_features=ffn_outputs)
 
     def forward(self, X):
-        return self.dense2(self.relu(self.dense1(X)))
+        return self.dense2(self.gelu(self.dense1(X)))
