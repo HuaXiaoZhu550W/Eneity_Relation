@@ -2,15 +2,17 @@ import os
 import torch
 import logging
 from tqdm import tqdm
+from torch.cuda.amp import autocast
 from torch.nn.utils import clip_grad_value_
 
 
 # 训练函数
-def train_epoch(model, trainloader, optimizer, loss_fn, lr_scheduler, device, epoch, writer, checkpoint_path):
+def train_epoch(model, trainloader, optimizer, loss_fn, lr_scheduler, device, epoch,
+                writer, checkpoint_path, scaler=None):
     model = model.to(device)
     model.train()
     total_loss = 0.0
-    step = 5000
+    step = 10000
     checkpoint = {}  # 存储模型相关参数, 方便断点续训练
     iterations = len(trainloader)
 
@@ -18,16 +20,17 @@ def train_epoch(model, trainloader, optimizer, loss_fn, lr_scheduler, device, ep
     pbar = tqdm(desc=f"epoch{epoch + 1}", total=iterations, postfix=dict, mininterval=0.4)
     for iteration, batch in enumerate(trainloader):
         inputs, attention_mask, seq_len, token_start_index, token_end_index, labels = [X.to(device) for X in batch]
+        with autocast():  # 自动应用混合精度
+            preds = model(inputs, attention_mask)  # 前向传播
+            # ['CLS'],['SEP'],['PAD']不参与损失计算
+            mask = (inputs != 101).logical_and((inputs != 102)).logical_and((inputs != 0))
+            loss = loss_fn(preds, labels, mask)  # 计算损失
         optimizer.zero_grad()  # 梯度清零
-        preds = model(inputs, attention_mask)  # 前向传播
-        # ['CLS'],['SEP'],['PAD']不参与损失计算
-        # preds = torch.nan_to_num(preds, nan=1e-20)
-        mask = (inputs != 101).logical_and((inputs != 102)).logical_and((inputs != 0))
-        loss = loss_fn(preds, labels, mask)  # 计算损失
-        loss.backward()
+        scaler.scale(loss).backward()  # 缩放损失值
         clip_grad_value_(model.parameters(), clip_value=0.5)  # 梯度剪裁
-        optimizer.step()
+        scaler.step(optimizer)  # 更新权重
         lr_scheduler.step()
+        scaler.update()  # 更新梯度缩放比例
 
         total_loss += loss.item()
 
@@ -46,7 +49,7 @@ def train_epoch(model, trainloader, optimizer, loss_fn, lr_scheduler, device, ep
                             'device': f"{inputs.device}"}
                          )
         pbar.update(1)
-        if (iteration+1) % step == 0 or (iteration+1) == iterations:
+        if (iteration + 1) % step == 0 or (iteration + 1) == iterations:
             # 存储模型相关参数, 方便断点续训练
             checkpoint = {
                 'epoch': epoch,

@@ -15,7 +15,8 @@ parser.add_argument('-weight_decay', type=float, default=0.9, help="AdamW优化�
 parser.add_argument('-batch_size', type=int, default=32, help="训练批次大小")
 parser.add_argument('-eval_batch', type=int, default=64, help="模型评估批次大小")
 parser.add_argument('-epochs', type=int, default=5, help="训练轮次")
-parser.add_argument('-warmup_steps', type=int, default=4800, help="热身训练步数")
+parser.add_argument('-decay_step', type=int, default=1000, help="学习率衰减步长")
+parser.add_argument('-gamma', type=float, default=0.8, help="学习率衰减系数")
 parser.add_argument('-threshold', type=float, default=0.5, help="阈值")
 parser.add_argument('-device', type=str,
                     default=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))

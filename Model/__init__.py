@@ -1,5 +1,5 @@
 from .BertForDUIE import BertForDuie
-from .LocalAttention import LocalAttention
+from .AddNorm import AddNorm
+from .PositionWiseFFN import PositionWiseFFN
 
-
-__all__ = ["BertForDuie", "LocalAttention"]
+__all__ = ["BertForDuie", "AddNorm", "PositionWiseFFN"]

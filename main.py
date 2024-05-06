@@ -9,12 +9,15 @@ from train import train_epoch
 from eval import evaluate
 from utils import load_checkpoint, save_model
 from torch.utils.tensorboard import SummaryWriter
-from LrScheduler import LrSchedulerWithWarmup
+from torch.optim.lr_scheduler import StepLR
+from torch.cuda.amp import GradScaler
+
+
+# 开始运行
 
 # 加载模型
-print("======================== 加载模型,预训练模型为: bert-base-chinese ========================")
-model = BertForDuie(model_name=opt.model_name, num_classes=opt.num_labels, dropout=opt.dropout,
-                    window_sizes=[5, 10, 15])
+print("======================== 加载模型,预训练模型为: hfl/chinese-roberta-wwm-ext ========================")
+model = BertForDuie(model_name=opt.model_name, num_classes=opt.num_labels, dropout=opt.dropout)
 model.to(opt.device)
 
 # 加载数据集
@@ -35,17 +38,19 @@ loss_fn = BCELoss()
 # 优化器
 optimizer = optim.AdamW(params=model.parameters(), lr=opt.lr, weight_decay=opt.weight_decay)
 
-# 学习率调整策略
-lr_scheduler = LrSchedulerWithWarmup(optimizer=optimizer, num_warmup_steps=opt.warmup_steps,
-                                     num_total_steps=opt.epochs * len(train_loader),
-                                     warmup_ratio=5e-5, decay_ratio=1e-4)
+# 初始化GradScaler
+scaler = GradScaler()
+
+
+lr_scheduler = StepLR(optimizer, step_size=opt.decay_step, gamma=opt.gamma)
+
 
 # 配置日志
 logging.basicConfig(filename=os.path.join(opt.logs_path, "training.log"), level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')  # 日志级别为信息级别
 
 # 创建SummaryWriter实例, 记录日志信息用于TensorBorder可视化
-writer = SummaryWriter(os.path.join(opt.logs_path, "train-tensorboard"))
+writer = SummaryWriter(os.path.join(opt.logs_path))
 
 # 检查是否存在检查点
 start_epoch = 0
@@ -57,13 +62,15 @@ else:
     print("没有保存检查点(checkpoint), 需要从头训练！")
 
 print("=========================== 开始训练 ===============================")
+bast_f1_score = 0.
 for epoch in range(start_epoch, opt.epochs):
-    checkpoint = train_epoch(model, train_loader, optimizer, loss_fn, lr_scheduler, opt.device,
-                             epoch, writer, opt.checkpoint_path)
+    checkpoint = train_epoch(model, train_loader, optimizer, loss_fn, lr_scheduler, opt.device, epoch,
+                             writer, opt.checkpoint_path, scaler)
 
-    if (epoch + 1) % 2 == 0 or (epoch + 1) == opt.epochs:
-        precision, recall, f1 = evaluate(model, dev_loader, loss_fn, opt.device, opt.threshold, opt.data_dir,
-                                         opt.id2spo, 'duie_dev.json')
+    precision, recall, f1 = evaluate(model, dev_loader, loss_fn, opt.device, opt.threshold, opt.data_dir, opt.id2spo, 'duie_dev.json')
+    print(f"precision: {precision:.2%} --||-- recall: {recall:.2%} --||-- F1: {f1:.4f}")
+    if bast_f1_score <= f1:
+        bast_f1_score = f1
         save_model(model, opt.checkpoint_path)  # 模型权重保存
-        print(f"precision: {precision:.2%} --||-- recall: {recall:.2%} --||-- F1: {f1:.4f}")
+
 writer.close()

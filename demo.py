@@ -1,6 +1,5 @@
 import torch
 from config import opt
-from Model import BertForDuie, LocalAttention
 from torch.nn.functional import sigmoid
 from transformers import BertTokenizerFast
 from utils import convert_sample, post_process
