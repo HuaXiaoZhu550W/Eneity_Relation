@@ -18,7 +18,7 @@ class BertForDuie(nn.Module):
         super(BertForDuie, self).__init__()
         self.bert = BertModel.from_pretrained(model_name)
         self.addnorm = AddNorm(normalized_shape=768, dropout=dropout)
-        self.ffn = PositionWiseFFN(input_dim=768, hidden_dim=3072)
+        self.ffn = PositionWiseFFN(ffn_inputs=768, ffn_hiddens=3072)
         self.dropout = nn.Dropout(p=dropout, inplace=False)
         self.classifier = nn.Sequential(nn.Linear(768, 512),
                                         nn.ReLU(inplace=True),
