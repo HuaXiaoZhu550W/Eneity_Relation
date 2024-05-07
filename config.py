@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-max_len', type=int, default=128, help="模型处理序列的最大长度")
 parser.add_argument('-dropout', type=float, default=0.1, help="dropout层的参数p")
 parser.add_argument('-lr', type=float, default=5e-5, help="初始学习率")
-parser.add_argument('-weight_decay', type=float, default=0.9, help="AdamW优化器的权重衰减参数")
+parser.add_argument('-weight_decay', type=float, default=1e-4, help="AdamW优化器的权重衰减参数")
 parser.add_argument('-batch_size', type=int, default=32, help="训练批次大小")
 parser.add_argument('-eval_batch', type=int, default=64, help="模型评估批次大小")
 parser.add_argument('-epochs', type=int, default=5, help="训练轮次")
@@ -20,7 +20,7 @@ parser.add_argument('-gamma', type=float, default=0.8, help="学习率衰减系�
 parser.add_argument('-threshold', type=float, default=0.5, help="阈值")
 parser.add_argument('-device', type=str,
                     default=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
-parser.add_argument('-model_name', default="../bert-base-chinese",
+parser.add_argument('-model_name', default="../chinese-roberta-wwm-ext",
                     help="预训练模型权重文件地址")
 parser.add_argument('-data_dir', default="../DUIE/", help="数据集存储地址")
 parser.add_argument('-checkpoint_path',
